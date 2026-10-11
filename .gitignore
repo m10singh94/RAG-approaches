@@ -218,3 +218,20 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ---- rag-approaches ----
+# Third-party documents are downloaded at runtime, never committed (licensing).
+data/
+build/
+logs/
+config/terraform-outputs.json
+results/eval-*.jsonl
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+.terraform.tfstate.lock.info

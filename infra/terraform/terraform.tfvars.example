@@ -1,0 +1,6 @@
+# cp terraform.tfvars.example terraform.tfvars
+region      = "ap-southeast-2"
+aws_profile = "default"
+
+# generation_model_id = "au.anthropic.claude-sonnet-4-5-20250929-v1:0"
+# agent_retriever     = "kb"

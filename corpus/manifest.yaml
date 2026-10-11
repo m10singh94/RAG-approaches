@@ -1,0 +1,70 @@
+# Public documents used as the knowledge base. Nothing here is committed to git: `rag download` fetches
+# into data/raw (gitignored) so the repo never redistributes third-party content.
+#
+# Deliberately NOT included (not publicly licensed): The Phoenix Project (commercial novel) and the
+# TOGAF standard (requires registration with The Open Group). The eval set has "unanswerable" questions
+# about both, to check each approach admits when the corpus doesn't cover something.
+
+sources:
+  wellarchitected:
+    title: AWS Well-Architected Framework
+    attribution: "Amazon Web Services - https://docs.aws.amazon.com/wellarchitected/latest/framework/"
+    documents:
+      # The framework PDF already contains every pillar's best practices; the per-pillar PDFs would duplicate it.
+      - id: wellarchitected-framework
+        title: AWS Well-Architected Framework
+        type: pdf
+        url: https://docs.aws.amazon.com/pdfs/wellarchitected/latest/framework/wellarchitected-framework.pdf
+
+  prescriptive-guidance:
+    title: AWS Prescriptive Guidance
+    attribution: "Amazon Web Services - https://docs.aws.amazon.com/prescriptive-guidance/"
+    documents:
+      - id: pg-strategy-migration
+        title: "AWS Prescriptive Guidance: Migration strategy (the 7 Rs)"
+        type: pdf
+        url: https://docs.aws.amazon.com/pdfs/prescriptive-guidance/latest/strategy-migration/strategy-migration.pdf
+      - id: pg-large-migration-guide
+        title: "AWS Prescriptive Guidance: Guide for AWS large migrations"
+        type: pdf
+        url: https://docs.aws.amazon.com/pdfs/prescriptive-guidance/latest/large-migration-guide/large-migration-guide.pdf
+      - id: pg-strategy-database-migration
+        title: "AWS Prescriptive Guidance: Database migration strategy"
+        type: pdf
+        url: https://docs.aws.amazon.com/pdfs/prescriptive-guidance/latest/strategy-database-migration/strategy-database-migration.pdf
+      - id: pg-cloud-design-patterns
+        title: "AWS Prescriptive Guidance: Cloud design patterns, architectures, and implementations"
+        type: pdf
+        url: https://docs.aws.amazon.com/pdfs/prescriptive-guidance/latest/cloud-design-patterns/cloud-design-patterns.pdf
+      - id: pg-decomposing-monoliths
+        title: "AWS Prescriptive Guidance: Decomposing monoliths into microservices"
+        type: pdf
+        url: https://docs.aws.amazon.com/pdfs/prescriptive-guidance/latest/modernization-decomposing-monoliths/modernization-decomposing-monoliths.pdf
+      - id: pg-security-reference-architecture
+        title: "AWS Prescriptive Guidance: AWS Security Reference Architecture"
+        type: pdf
+        url: https://docs.aws.amazon.com/pdfs/prescriptive-guidance/latest/security-reference-architecture/security-reference-architecture.pdf
+      - id: pg-rag-options
+        title: "AWS Prescriptive Guidance: Retrieval Augmented Generation options and architectures on AWS"
+        type: pdf
+        url: https://docs.aws.amazon.com/pdfs/prescriptive-guidance/latest/retrieval-augmented-generation-options/retrieval-augmented-generation-options.pdf
+      - id: pg-logging-monitoring-cloudwatch
+        title: "AWS Prescriptive Guidance: Designing and implementing logging and monitoring with Amazon CloudWatch"
+        type: pdf
+        url: https://docs.aws.amazon.com/pdfs/prescriptive-guidance/latest/implementing-logging-monitoring-cloudwatch/implementing-logging-monitoring-cloudwatch.pdf
+
+  sre:
+    title: Google Site Reliability Engineering
+    # CC BY-NC-ND 4.0: fine to read and index privately for a non-commercial demo; do not redistribute.
+    attribution: "Google, Inc. / O'Reilly Media - https://sre.google/books/ - CC BY-NC-ND 4.0"
+    documents:
+      - id: sre-book
+        title: "Site Reliability Engineering (the SRE book)"
+        type: html_toc
+        url: https://sre.google/sre-book/table-of-contents/
+        link_prefix: /sre-book/
+      - id: sre-workbook
+        title: "The Site Reliability Workbook"
+        type: html_toc
+        url: https://sre.google/workbook/table-of-contents/
+        link_prefix: /workbook/

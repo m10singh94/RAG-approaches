@@ -1,0 +1,4 @@
+bedrock-agentcore>=0.1.5
+langgraph>=0.6
+langchain-aws>=0.2.30
+boto3>=1.40

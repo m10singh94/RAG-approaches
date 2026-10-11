@@ -1,0 +1,42 @@
+# Unit prices used by `rag eval` and `rag cost-model`. All USD.
+#
+# !! VERIFY BEFORE PUBLISHING !!  These are list prices as understood when the repo was written and several
+# are us-east-1 figures; ap-southeast-2 (Sydney) is typically somewhat higher. Check each against:
+#   https://aws.amazon.com/bedrock/pricing/            (models, Knowledge Bases)
+#   https://aws.amazon.com/s3/pricing/                 (S3 Vectors tab)
+#   https://aws.amazon.com/bedrock/agentcore/pricing/  (Runtime, Memory, Gateway)
+# and update `as_of` / `region`.
+as_of: "2026-10-11 (unverified draft)"
+region: ap-southeast-2
+
+models:
+  # Matched by substring against the model id. Prices per 1M tokens.
+  claude-sonnet-4-5: {input_per_mtok: 3.00, output_per_mtok: 15.00}
+  claude-haiku-4-5: {input_per_mtok: 1.00, output_per_mtok: 5.00}
+  claude-opus-4-5: {input_per_mtok: 5.00, output_per_mtok: 25.00}
+
+# Geographic cross-region inference profiles (au., apac., eu., us.) can carry a premium over global ones.
+geo_profile_premium: 0.10
+
+embeddings:
+  titan-embed-text-v2: {per_1k_tokens: 0.00002}
+
+s3_vectors:
+  storage_per_gb_month: 0.06
+  put_per_gb: 0.20
+  query_per_million_requests: 2.50
+  query_per_tb_processed: 0.004
+
+agentcore_runtime:
+  vcpu_per_hour: 0.0895
+  gb_memory_per_hour: 0.00945
+  # Runtime bills CPU only while it's active (not while waiting on the LLM/IO); memory for the whole session.
+  # These are assumptions for the per-request estimate - replace with CloudWatch numbers once deployed.
+  assumed_vcpu: 1
+  assumed_memory_gb: 2
+  assumed_active_cpu_fraction: 0.15
+
+# Reference points for the "fixed monthly cost" part of the blog (not used by any approach in this repo).
+reference_alternatives:
+  opensearch_serverless_min_ocus: 2        # 1 indexing + 1 search OCU, non-redundant "dev/test" collection
+  opensearch_serverless_per_ocu_hour: 0.24
