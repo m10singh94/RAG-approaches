@@ -9,6 +9,10 @@ Amazon Bedrock Knowledge Bases, and agentic RAG (LangGraph) on Amazon Bedrock Ag
   share chunking settings, model, and `llm.SYSTEM_PROMPT`. Don't tune one approach without noting it.
 - Never commit corpus documents (`data/` is gitignored). Only publicly licensed sources go in `corpus/manifest.yaml`.
 - Prices in `config/pricing.yaml` must be verified against AWS pricing pages before results are published.
+- Account facts (checked 2026-10-11): FREE plan (new AWS experience). Claude Sonnet/Haiku 4.5 work via `au.*`
+  inference profiles; Claude 5.x returns "not available for this account". The Anthropic use-case form is not yet
+  submitted. Python needs `boto3[crt]` for `aws login` credentials.
+- help_level: HIGH (the user wants to learn as they go).
 
 <!-- BEGIN AWS Agent Toolkit rules -->
 # AWS Guidance for the new AWS experience

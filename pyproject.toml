@@ -5,7 +5,7 @@ description = "DIY RAG vs. Amazon Bedrock Knowledge Bases vs. agentic RAG on Ama
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "boto3>=1.40",
+    "boto3[crt]>=1.40",  # [crt] is required for `aws login` credentials
     "python-dotenv>=1.0",
     "pyyaml>=6.0",
     "requests>=2.32",
