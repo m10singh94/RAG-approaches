@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import logging
+import uuid
 from datetime import datetime
 
 import pandas as pd
@@ -61,7 +62,9 @@ def render_result(result: RagResult) -> None:
 
 def run(name: str, question: str, top_k: int, source: str | None) -> RagResult | None:
     try:
-        result = approach(name).query(question, top_k=top_k, source=source)
+        # One AgentCore session per chat: only the first message pays the ~5 s microVM cold start.
+        extra = {"session_id": st.session_state.agentcore_session} if name == "agentcore" else {}
+        result = approach(name).query(question, top_k=top_k, source=source, **extra)
         log_result(result)
         return result
     except Exception as exc:
@@ -85,12 +88,15 @@ with st.sidebar:
     st.caption(f"Region `{s.region}` · model `{s.generation_model_id}` · KB `{s.kb_id or 'not deployed'}`")
     if st.button("Clear chat"):
         st.session_state.messages = []
+        st.session_state.agentcore_session = f"rag-approaches-chat-{uuid.uuid4()}"
 
 st.title("RAG on AWS: DIY vs. Knowledge Bases vs. AgentCore")
 
 # ---- chat -------------------------------------------------------------------------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
+if "agentcore_session" not in st.session_state:
+    st.session_state.agentcore_session = f"rag-approaches-chat-{uuid.uuid4()}"
 
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):

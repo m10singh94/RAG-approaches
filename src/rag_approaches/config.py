@@ -62,7 +62,7 @@ def get_settings() -> Settings:
     def pick(env: str, tf_key: str | None = None, default=None):
         return os.getenv(env) or (tf.get(tf_key) if tf_key else None) or default
 
-    generation_model_id = pick("GENERATION_MODEL_ID", "generation_model_id", "au.anthropic.claude-sonnet-4-5-20250929-v1:0")
+    generation_model_id = pick("GENERATION_MODEL_ID", "generation_model_id", "au.anthropic.claude-sonnet-4-6")
     return Settings(
         region=pick("RAG_REGION", "region", os.getenv("AWS_REGION", "ap-southeast-2")),
         profile=os.getenv("AWS_PROFILE") or None,
@@ -78,7 +78,7 @@ def get_settings() -> Settings:
         agent_runtime_arn=pick("AGENT_RUNTIME_ARN", "agent_runtime_arn"),
         agent_retriever=pick("AGENT_RETRIEVER", None, "kb"),
         top_k=int(pick("TOP_K", None, 5)),
-        max_tokens=int(pick("MAX_TOKENS", None, 1024)),
+        max_tokens=int(pick("MAX_TOKENS", None, 2048)),  # 1024 truncated multi-source agent answers
         chunk_max_tokens=int(pick("CHUNK_MAX_TOKENS", "chunk_max_tokens", 300)),
         chunk_overlap_pct=int(pick("CHUNK_OVERLAP_PCT", "chunk_overlap_pct", 20)),
     )

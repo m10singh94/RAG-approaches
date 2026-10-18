@@ -235,3 +235,7 @@ results/eval-*.jsonl
 !*.tfvars.example
 crash.log
 .terraform.tfstate.lock.info
+logs-*.txt
+# Saved plans can contain sensitive values
+tfplan
+*.tfplan

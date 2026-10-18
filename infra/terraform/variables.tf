@@ -28,7 +28,7 @@ variable "embedding_dimensions" {
 variable "generation_model_id" {
   description = "Claude model or inference profile id used by the agent. List options with `rag models`."
   type        = string
-  default     = "au.anthropic.claude-sonnet-4-5-20250929-v1:0"
+  default     = "au.anthropic.claude-sonnet-4-6"
 }
 
 variable "chunk_max_tokens" {

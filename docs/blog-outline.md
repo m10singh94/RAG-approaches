@@ -38,6 +38,19 @@ Things to look for:
 - `kb` vs. `kb-rag`: what you give up (prompt control, token visibility) for zero generation code.
 - single-hop vs. multi-hop: where the agent earns its extra LLM calls.
 - `agentic` vs. `agentcore`: pure hosting overhead (cold start, network). The trace shows `overhead_ms`.
+  Measured on 2026-10-18 in Sydney: a new session (cold microVM) added ~4.9 s; reusing the session added ~0.1 s.
+  Eval design: warm up once, reuse a session, and report cold-start latency as a separate number.
+
+## Findings from the first smoke tests (2026-10-18), worth a paragraph each
+- **Throttling is a DIY problem.** Titan V2 has a 600 req/min default quota. The DIY indexer (8 threads) was
+  throttled, especially while the KB ingestion job drew on the same quota. The fix was client-side pacing and
+  resumable indexing. The KB paces itself.
+- **Chunk counts differ.** Bedrock produced 4,492 chunks vs. ~4,190 from our word-based 300-token
+  approximation of the same settings (different tokenizers).
+- **Chunk boundaries show up in answers.** The "four golden signals" answer described "errors" only vaguely because
+  its definition was in a chunk outside the top 5. Candidate follow-up: hierarchical or semantic chunking.
+- **Output caps.** At max_tokens=1024 the agent's multi-source comparison was cut off; raised to 2048 for all.
+- **The agent plans per source.** For a comparison question it made two parallel, source-filtered searches.
 
 ## 6. Cost
 - Fixed vs. variable split; `results/cost-model.png` (monthly cost vs. queries per month, log-log).

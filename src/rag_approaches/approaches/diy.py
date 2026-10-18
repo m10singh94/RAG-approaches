@@ -32,6 +32,11 @@ class DiyRag:
         s3v = client("s3vectors")
         for doc in iter_documents():
             pieces = chunk_text(doc.text, s.chunk_max_tokens, s.chunk_overlap_pct)
+            # Resumable: batches are written in order, so if the last chunk exists the document is done.
+            last_key = f"{doc.doc_id}#{len(pieces) - 1}"
+            if s3v.get_vectors(vectorBucketName=self.bucket, indexName=self.index, keys=[last_key])["vectors"]:
+                print(f"  skip {doc.doc_id} (already indexed)")
+                continue
             for start in range(0, len(pieces), PUT_BATCH):
                 batch = pieces[start : start + PUT_BATCH]
                 vectors = embed_many(batch, usage)

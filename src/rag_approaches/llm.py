@@ -7,6 +7,9 @@ prompt tweaks.
 from __future__ import annotations
 
 import json
+import os
+import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
 
 from rag_approaches.aws import client
@@ -45,8 +48,29 @@ def generate(question: str, chunks: list[Chunk], usage: Usage) -> str:
     return "".join(block.get("text", "") for block in resp["output"]["message"]["content"])
 
 
+class RateLimiter:
+    """Spaces calls evenly across threads. Pacing below the quota beats bursting and relying on retries:
+    new accounts get 600 Titan V2 requests/minute, and a KB ingestion job draws from the same quota."""
+
+    def __init__(self, per_minute: int) -> None:
+        self.interval = 60.0 / per_minute
+        self._next = time.monotonic()
+        self._lock = threading.Lock()
+
+    def wait(self) -> None:
+        with self._lock:
+            now = time.monotonic()
+            slot = max(now, self._next)
+            self._next = slot + self.interval
+        time.sleep(max(0.0, slot - now))
+
+
+_embed_limiter = RateLimiter(int(os.getenv("EMBED_RPM", "500")))
+
+
 def embed(text: str, usage: Usage | None = None) -> list[float]:
     s = get_settings()
+    _embed_limiter.wait()
     resp = client("bedrock-runtime").invoke_model(
         modelId=s.embedding_model_id,
         body=json.dumps({"inputText": text, "dimensions": s.embedding_dimensions, "normalize": True}),

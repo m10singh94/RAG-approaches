@@ -42,12 +42,17 @@ class KnowledgeBaseRag:
         data_source_id = require(get_settings().kb_data_source_id, "KB_DATA_SOURCE_ID")
         agent = client("bedrock-agent")
         job = agent.start_ingestion_job(knowledgeBaseId=self.kb_id, dataSourceId=data_source_id)["ingestionJob"]
+        last = None
         while job["status"] in ("STARTING", "IN_PROGRESS"):
             time.sleep(poll_seconds)
             job = agent.get_ingestion_job(
                 knowledgeBaseId=self.kb_id, dataSourceId=data_source_id, ingestionJobId=job["ingestionJobId"]
             )["ingestionJob"]
-            print(f"  ingestion {job['status']}: {job.get('statistics', {})}")
+            stats = job.get("statistics", {})
+            progress = (job["status"], stats.get("numberOfNewDocumentsIndexed"), stats.get("numberOfDocumentsFailed"))
+            if progress != last:
+                print(f"  ingestion {job['status']}: indexed={progress[1]} failed={progress[2]}")
+                last = progress
         return job
 
     # ---- querying -------------------------------------------------------------------------------------
@@ -108,6 +113,7 @@ class KnowledgeBaseRag:
         # The managed prompt template isn't visible either, so this is a lower bound on input tokens.
         usage.input_tokens = (len(question) + sum(len(c.text) for c in chunks)) // 4
         usage.output_tokens = len(answer) // 4
+        usage.embedding_tokens = len(question) // 4  # the query is still embedded (and billed) behind the scenes
         usage.vector_queries, usage.llm_calls = 1, 1
         return RagResult(self.name, question, answer, chunks, usage, tracer.events, tracer.total_ms())
 
