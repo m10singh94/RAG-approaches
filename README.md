@@ -59,6 +59,7 @@ infra/terraform/                  # S3, S3 Vectors, KB + data source, AgentCore 
 eval/questions.jsonl              # 31 questions: single-hop, multi-hop, filtered, unanswerable
 config/pricing.yaml               # unit prices (verify before publishing!)
 docs/blog-outline.md
+docs/PROGRESS.md                  # step-by-step log of what's been done; start here when resuming
 ```
 
 ## Quick start
