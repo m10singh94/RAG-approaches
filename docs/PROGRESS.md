@@ -3,6 +3,13 @@
 What has been done so far, in order, with the commands that worked. Use it to pick the work up again on any
 machine. Findings for the blog itself are in [blog-outline.md](blog-outline.md).
 
+> **Keep this file current:** update it whenever something is added to or removed from the repo or the AWS deployment.
+
+**Docs:**
+- `blog-outline.md`: committed; structure and findings.
+- `blog.md`: the blog draft. **Local only, never committed** (listed in `.git/info/exclude`, git's local-only
+  ignore list). Back it up separately; it isn't on GitHub.
+
 **Status (2026-10-18):** infrastructure deployed in `ap-southeast-2`; both vector indexes loaded; all six
 approaches pass a smoke test (`diy-fanout` added the same day). **Next:** check the eval questions by hand, then run `rag eval`.
 
@@ -143,6 +150,21 @@ The Streamlit app runs locally and keeps one AgentCore session per chat:
 uv run streamlit run app/streamlit_app.py
 ```
 
+### Cross-source experiments (retrieval only, ~free)
+- A single search for a Well-Architected + SRE question returned **0 SRE chunks even at k=30**; one search per
+  source fixed coverage. This led to the `diy-fanout` approach (one filtered search per source, one LLM call).
+- Recommended questions for manual testing (cross-source, false-premise, near-miss, not-in-corpus) are listed in
+  `blog-outline.md` and `blog.md`. Throwaway probe scripts were not kept in the repo.
+
+### Cost and credit checks
+```powershell
+aws freetier get-account-plan-state --region us-east-1 --profile default   # remaining credits
+```
+- Idle cost of the whole deployment: **under $0.01/week** (S3 + S3 Vectors storage; KB and AgentCore cost nothing idle).
+- Per-question costs: ~$0.007 (`kb-rag`) to ~$0.06 (`agentic`); one 6-approach compare in Streamlit is ~$0.12.
+- Cost Explorer is **not enabled** on the account. Enable it in Billing and Cost Management to see actual spend
+  (data appears after ~24 h).
+
 ## 8. Settings in effect
 
 | Setting | Value | Where |
@@ -158,6 +180,7 @@ uv run streamlit run app/streamlit_app.py
 
 ## 9. Next steps
 
+0. Optional, recommended: set a spend limit in AWS Settings → Billing and enable Cost Explorer.
 1. Check questions by hand (Streamlit "Compare approaches" mode). Review the reference answers in
    `eval/questions.jsonl`, since the judge scores against them.
 2. Eval design for AgentCore: warm up once, reuse a session, and report cold-start latency separately.

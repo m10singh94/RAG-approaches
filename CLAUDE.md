@@ -13,6 +13,10 @@ Amazon Bedrock Knowledge Bases, and agentic RAG (LangGraph) on Amazon Bedrock Ag
   inference profiles; Claude 5.x returns "not available for this account". Anthropic use-case form submitted.
   Titan V2 quota is 600 req/min (indexing is paced to 500). Python needs `boto3[crt]` for `aws login` credentials.
 - help_level: HIGH (the user wants to learn as they go).
+- Always keep `docs/PROGRESS.md` up to date: whenever something is added to or removed from the repo or the
+  deployment, record it there (successful steps only) in the same change.
+- `docs/blog.md` is the user's local blog draft: never commit it (it's in `.git/info/exclude`). Extend it as the
+  repo evolves; add eval results once `rag eval` has run.
 
 <!-- BEGIN AWS Agent Toolkit rules -->
 # AWS Guidance for the new AWS experience
