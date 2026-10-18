@@ -6,6 +6,7 @@ machine. Findings for the blog itself are in [blog-outline.md](blog-outline.md).
 > **Keep this file current:** update it whenever something is added to or removed from the repo or the AWS deployment.
 
 **Docs:**
+- `README.md`: overview of all six approaches (three families), quick start, and fairness rules. Updated 2026-10-18.
 - `blog-outline.md`: committed; structure and findings.
 - `blog.md`: the blog draft. **Local only, never committed** (listed in `.git/info/exclude`, git's local-only
   ignore list). Back it up separately; it isn't on GitHub.
