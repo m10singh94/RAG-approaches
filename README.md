@@ -8,7 +8,7 @@ the approach itself.
 
 | # | Approach | You own | AWS manages |
 |---|----------|---------|-------------|
-| 1 | **DIY RAG** (`diy`) | chunking, embedding calls, vector index, retrieval, prompt | the model, the vector store (S3 Vectors) |
+| 1 | **DIY RAG** (`diy`, `diy-fanout`) | chunking, embedding calls, vector index, retrieval, prompt | the model, the vector store (S3 Vectors) |
 | 2 | **Bedrock Knowledge Bases** (`kb`, `kb-rag`) | the prompt (`kb`), or nothing (`kb-rag`) | ingestion, chunking, embedding, sync, retrieval |
 | 3 | **Agentic RAG on AgentCore** (`agentic`, `agentcore`) | the agent graph and its tools | hosting, session isolation, scaling, observability |
 
@@ -48,7 +48,7 @@ about both, to check that each approach says "not found" instead of answering fr
 
 ```
 src/rag_approaches/
-  approaches/diy.py               # 1. embed -> S3 Vectors QueryVectors -> Converse
+  approaches/diy.py               # 1. embed -> S3 Vectors QueryVectors -> Converse (+ per-source fan-out)
   approaches/knowledge_base.py    # 2. Retrieve (+ our prompt) or RetrieveAndGenerate
   approaches/agentic.py           # 3. LangGraph agent with a search tool
   approaches/agentcore_remote.py  # 3. same agent, invoked on AgentCore Runtime
@@ -93,7 +93,7 @@ uv run rag ask -a agentic "Compare how Well-Architected and the SRE book approac
 uv run streamlit run app/streamlit_app.py
 
 # 5. Measure
-uv run rag eval -a diy,kb,kb-rag,agentic,agentcore
+uv run rag eval -a diy,diy-fanout,kb,kb-rag,agentic,agentcore
 uv run rag cost-model --vectors 30000
 ```
 

@@ -117,7 +117,7 @@ def main() -> None:
     p.set_defaults(func=_ask)
 
     p = sub.add_parser("eval", help="run the eval set")
-    p.add_argument("-a", "--approaches", default="diy,kb,kb-rag,agentic")
+    p.add_argument("-a", "--approaches", default="diy,diy-fanout,kb,kb-rag,agentic")
     p.add_argument("--ids", help="comma-separated question ids (default: all)")
     p.set_defaults(func=_eval)
 

@@ -69,11 +69,15 @@ def run(approaches: list[str], question_ids: list[str] | None = None) -> None:
                 continue
             verdict = judge(q, result.answer)
             row = {
-                "approach": name, "id": q["id"], "category": q["category"],
+                "approach": name, "id": q["id"], "category": q["category"], "expected_sources": q["expected_sources"],
                 "correctness": verdict.get("correctness"), "declined": verdict.get("declined"),
                 "judge_reason": verdict.get("reason"),
                 "source_hit": (not q["expected_sources"]) or any(c.source in q["expected_sources"] for c in result.chunks),
                 "latency_ms": result.latency_ms, "cost": cost_breakdown(result), "result": result.to_dict(),
+                # How much retrieved text the model read: separates "better search" from "just more context".
+                "context_chunks": len(result.chunks),
+                "context_tokens_est": sum(len(c.text) for c in result.chunks) // 4,
+                "sources_retrieved": sorted({c.source for c in result.chunks}),
             }
             rows.append(row)
             with detail_path.open("a", encoding="utf-8") as f:
@@ -101,6 +105,11 @@ def _summarise(name: str, rows: list[dict]) -> dict:
         "refusal_accuracy": round(sum(bool(r["declined"]) for r in negatives) / len(negatives), 2) if negatives else None,
         "latency_p50_ms": lat[len(lat) // 2],
         "latency_p95_ms": lat[min(len(lat) - 1, int(len(lat) * 0.95))],
+        "avg_context_chunks": round(statistics.mean(r["context_chunks"] for r in rows), 1),
+        "avg_context_tokens": round(statistics.mean(r["context_tokens_est"] for r in rows)),
+        # Multi-hop only: did retrieval cover ALL expected sources (not just one)?
+        "multi_hop_full_coverage": _mean([float(set(r["expected_sources"]) <= set(r["sources_retrieved"]))
+                                          for r in answerable if r["category"] == "multi-hop"]),
         "avg_input_tokens": round(statistics.mean(r["result"]["usage"]["input_tokens"] for r in rows)),
         "avg_output_tokens": round(statistics.mean(r["result"]["usage"]["output_tokens"] for r in rows)),
         "avg_llm_calls": round(statistics.mean(r["result"]["usage"]["llm_calls"] for r in rows), 2),

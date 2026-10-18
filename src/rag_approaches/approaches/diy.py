@@ -6,6 +6,8 @@ at low volume. Swapping in pgvector or OpenSearch only changes `_search` and `bu
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
+
 from rag_approaches.aws import client
 from rag_approaches.chunking import chunk_text
 from rag_approaches.config import get_settings, require
@@ -58,7 +60,9 @@ class DiyRag:
 
     # ---- querying -------------------------------------------------------------------------------------
     def retrieve(self, query: str, usage: Usage, top_k: int, source: str | None = None) -> list[Chunk]:
-        vector = embed(query, usage)
+        return self._search(embed(query, usage), usage, top_k, source)
+
+    def _search(self, vector: list[float], usage: Usage, top_k: int, source: str | None = None) -> list[Chunk]:
         kwargs = {"filter": {"source": source}} if source else {}
         resp = client("s3vectors").query_vectors(
             vectorBucketName=self.bucket,
@@ -88,6 +92,42 @@ class DiyRag:
             chunks = self.retrieve(question, usage, top_k, source)
             d["hits"] = [f"{c.title} ({c.score})" for c in chunks]
         with tracer.step("generate (Converse)", model=get_settings().generation_model_id) as d:
+            answer = generate(question, chunks, usage)
+            d["input_tokens"], d["output_tokens"] = usage.input_tokens, usage.output_tokens
+        return RagResult(self.name, question, answer, chunks, usage, tracer.events, tracer.total_ms())
+
+
+class DiyFanoutRag(DiyRag):
+    """DIY + one filtered search per source, merged, then a single LLM call.
+
+    The control for the agent: single searches let the source with the most similar wording crowd out the
+    others (Q1 returned 0 SRE chunks even at k=30). Fan-out guarantees every source a share, without an agent
+    loop. If this matches the agent on cross-source questions, the agent's edge there is the *search
+    strategy*, not agency. The trade-off: it always pays for every source, even on single-source questions.
+    """
+
+    name = "diy-fanout"
+    SOURCES = ("wellarchitected", "prescriptive-guidance", "sre")
+
+    def query(self, question: str, top_k: int | None = None, source: str | None = None) -> RagResult:
+        if source:  # an explicit filter means one source, so fan-out is the same as a plain search
+            return super().query(question, top_k, source)
+        top_k = top_k or get_settings().top_k
+        tracer, usage = Tracer(), Usage()
+        with tracer.step("embed (once)") as d:
+            vector = embed(question, usage)
+            d["embedding_tokens"] = usage.embedding_tokens
+        with (
+            ThreadPoolExecutor(max_workers=len(self.SOURCES)) as pool,
+            tracer.step("vector search per source", top_k_each=top_k, sources=list(self.SOURCES)) as d,
+        ):
+            # Throwaway Usage per thread (+= isn't atomic); count the queries once afterwards.
+            per_source = list(pool.map(lambda s: self._search(vector, Usage(), top_k, s), self.SOURCES))
+            usage.vector_queries += len(self.SOURCES)
+            d["hits"] = {s: [f"{c.title} ({c.score})" for c in hits] for s, hits in zip(self.SOURCES, per_source)}
+        # Grouped by source, best first, so the prompt reads as one block per source.
+        chunks = [c for hits in per_source for c in hits]
+        with tracer.step("generate (Converse)", model=get_settings().generation_model_id, chunks=len(chunks)) as d:
             answer = generate(question, chunks, usage)
             d["input_tokens"], d["output_tokens"] = usage.input_tokens, usage.output_tokens
         return RagResult(self.name, question, answer, chunks, usage, tracer.events, tracer.total_ms())

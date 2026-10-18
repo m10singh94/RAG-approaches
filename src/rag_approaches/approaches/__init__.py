@@ -4,6 +4,7 @@ from __future__ import annotations
 
 APPROACHES = {
     "diy": "DIY: Titan embeddings + S3 Vectors + Converse",
+    "diy-fanout": "DIY fan-out: one search per source, merged, one LLM call",
     "kb": "Knowledge Base: Retrieve API + same prompt as DIY",
     "kb-rag": "Knowledge Base: managed RetrieveAndGenerate",
     "agentic": "Agentic: LangGraph agent, run locally",
@@ -16,6 +17,10 @@ def get_approach(name: str):
         from rag_approaches.approaches.diy import DiyRag
 
         return DiyRag()
+    if name == "diy-fanout":
+        from rag_approaches.approaches.diy import DiyFanoutRag
+
+        return DiyFanoutRag()
     if name in ("kb", "kb-rag"):
         from rag_approaches.approaches.knowledge_base import KnowledgeBaseRag
 

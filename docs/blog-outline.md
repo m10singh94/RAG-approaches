@@ -52,6 +52,22 @@ Things to look for:
 - **Output caps.** At max_tokens=1024 the agent's multi-source comparison was cut off; raised to 2048 for all.
 - **The agent plans per source.** For a comparison question it made two parallel, source-filtered searches.
 
+## Why the agent wins cross-source questions: volume vs. targeting (2026-10-18)
+Q1: *"How do the AWS Well-Architected Framework and the Google SRE book each recommend learning from incidents?"*
+
+1. **Not volume.** A single search returned 0 SRE chunks at k=5, 15 and 30 (DIY). Well-Architected's many
+   "post-incident analysis" chunks crowd out the rest; asking for more returns more of the same source.
+2. **Coverage, fixed by `diy-fanout`.** One filtered search per source, one LLM call: both sources covered, ~7 s,
+   ~2.2¢. But the SRE hits were prefaces and forewords (the full question's wording matches chunks *about the books*),
+   and 5 chunks were irrelevant Prescriptive Guidance.
+3. **Relevance, fixed by the agent.** It rewrote the query ("learning from incidents post-incident analysis"),
+   skipped Prescriptive Guidance, then searched again ("postmortem blameless culture…") and found the
+   *Postmortem Culture* chapter (scores 0.81–0.85). ~18 s, ~6.2¢, 3 LLM calls, ~10.9k input tokens (vs. 4.9k).
+
+Takeaway: **fan-out buys coverage at ~2x DIY's cost; the agent buys relevance at ~3x fan-out's cost.** The eval
+reports `avg_context_tokens` and `multi_hop_full_coverage` to keep "better search" separate from "more context".
+Possible next control: a single LLM call that rewrites the query per source before fan-out (rewriting without iteration).
+
 ## 6. Cost
 - Fixed vs. variable split; `results/cost-model.png` (monthly cost vs. queries per month, log-log).
 - The vector store dominates idle cost: S3 Vectors (~0) vs. OpenSearch Serverless minimum OCUs.

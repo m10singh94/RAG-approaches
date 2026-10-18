@@ -3,8 +3,8 @@
 What has been done so far, in order, with the commands that worked. Use it to pick the work up again on any
 machine. Findings for the blog itself are in [blog-outline.md](blog-outline.md).
 
-**Status (2026-10-18):** infrastructure deployed in `ap-southeast-2`; both vector indexes loaded; all five
-approaches pass a smoke test. **Next:** check the eval questions by hand, then run `rag eval`.
+**Status (2026-10-18):** infrastructure deployed in `ap-southeast-2`; both vector indexes loaded; all six
+approaches pass a smoke test (`diy-fanout` added the same day). **Next:** check the eval questions by hand, then run `rag eval`.
 
 ---
 
@@ -123,7 +123,11 @@ uv run rag ask -a kb        "What are the four golden signals of monitoring?"
 uv run rag ask -a kb-rag    "What are the 7 Rs of migration strategies?"
 uv run rag ask -a agentic   "Compare how the AWS Well-Architected Framework and the Google SRE book approach testing disaster recovery."
 uv run rag ask -a agentcore "What are the four golden signals of monitoring?"
+uv run rag ask -a diy-fanout "How do the AWS Well-Architected Framework and the Google SRE book each recommend learning from incidents?"
 ```
+
+Good test questions (cross-source, false-premise, near-miss) and the volume-vs-targeting experiment are
+written up in `blog-outline.md`.
 
 | Approach | Latency | Cost/query | Observation |
 |---|---|---|---|
@@ -132,6 +136,7 @@ uv run rag ask -a agentcore "What are the four golden signals of monitoring?"
 | `kb-rag` | 3.9 s | ~$0.007 (estimated) | correct; no scores or token usage returned |
 | `agentic` | 14.3 s | ~$0.035 | made two parallel, source-filtered searches |
 | `agentcore` | ~6.5 s warm / ~11 s cold | ~$0.020 | session cold start ~4.9 s, warm ~0.1 s |
+| `diy-fanout` | ~7 s | ~$0.022 | one search per source; covers both sources on cross-source Q1 |
 
 The Streamlit app runs locally and keeps one AgentCore session per chat:
 ```powershell
@@ -157,7 +162,7 @@ uv run streamlit run app/streamlit_app.py
    `eval/questions.jsonl`, since the judge scores against them.
 2. Eval design for AgentCore: warm up once, reuse a session, and report cold-start latency separately.
 3. Verify `config/pricing.yaml` against the Sydney pricing pages (several values are us-east-1 drafts).
-4. Run the eval: `uv run rag eval -a diy,kb,kb-rag,agentic,agentcore`, then `uv run rag cost-model --vectors 4500`.
+4. Run the eval: `uv run rag eval -a diy,diy-fanout,kb,kb-rag,agentic,agentcore`, then `uv run rag cost-model --vectors 4500`.
 5. Possible follow-up: larger, hierarchical or semantic chunking (the "errors" golden signal fell outside the top 5).
 
 ## 10. Teardown (when finished)
